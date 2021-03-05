@@ -98,10 +98,10 @@ def get_last():
 def search():
     search_query = (request.args.get('query'))
     search_format = "%{}%".format(search_query)
-    res = Record.query.filter(Record.volltext.like(search_format)).all()
+    res = Record.query.filter(Record.volltext.like(search_format))[0:20]
 
-    record_schema = RecordSchema(many=True)
-    output = record_schema.dump(res)
+    record_schema_many = RecordSchema(many=True)
+    output = record_schema_many.dump(res)
     res_json = jsonify({'record': output})
     return res_json
 

@@ -22,6 +22,7 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
+import Button from '@material-ui/core/Button';
 
 
 const darkTheme = createMuiTheme({
@@ -125,6 +126,9 @@ function Welcome(props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(20);
 
+    const [searchTerm, setSearchTerm] = React.useState('');
+
+
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
         console.log('Page value changed to ' + value);
@@ -136,6 +140,11 @@ function Welcome(props) {
     const handleChange = (panel) => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
+
+    const handleSubmit = (e) => {
+        console.log('Search Term: ', searchTerm)
+        searchDatabase(searchTerm);
+    }
 
     useEffect(() => {
 
@@ -217,25 +226,17 @@ function Welcome(props) {
     };
 
     const searchDatabase = (e) => {
-        fetch('http://localhost:5000/search?query=' + e, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-            .then(safeParseJSON)
-            .then(json => {
-                return json;
-            });
-    }
-
-    async function safeParseJSON(response) {
-        const body = await response.text();
-        try {
-            return JSON.parse(body);
-        } catch (err) {
-            console.error("Error:", err);
-            console.error("Response body:", body);
+        if (e !== undefined) {
+            fetch('http://localhost:5000/search?query=' + e, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(safeParseJSON)
+                .then(json => {
+                    setData(json)
+                });
         }
     }
 
@@ -360,47 +361,22 @@ function Welcome(props) {
                                 <div className={classes.searchIcon}>
                                     <SearchIcon/>
                                 </div>
-                                <InputBase
-                                    placeholder="Search…"
-                                    classes={{
-                                        root: classes.inputRoot,
-                                        input: classes.inputInput,
-                                    }}
-                                    inputProps={searchDatabase()}
-                                />
-                            </div>
-                            <div className={classes.sectionDesktop}>
-                                <IconButton aria-label="show 4 new mails" color="inherit">
-                                    <Badge badgeContent={4} color="secondary">
-                                        <MailIcon/>
-                                    </Badge>
-                                </IconButton>
-                                <IconButton aria-label="show 17 new notifications" color="inherit">
-                                    <Badge badgeContent={17} color="secondary">
-                                        <NotificationsIcon/>
-                                    </Badge>
-                                </IconButton>
-                                <IconButton
-                                    edge="end"
-                                    aria-label="account of current user"
-                                    aria-controls={menuId}
-                                    aria-haspopup="true"
-                                    onClick={handleProfileMenuOpen}
-                                    color="inherit"
-                                >
-                                    <AccountCircle/>
-                                </IconButton>
+                                <form className={classes.container} onSubmit={handleSubmit}>
+                                    <InputBase
+                                        placeholder="Search…"
+                                        classes={{
+                                            root: classes.inputRoot,
+                                            input: classes.inputInput,
+                                        }}
+                                        value={searchTerm}
+                                        onInput={e => setSearchTerm(e.target.value)}
+                                    />
+                                    <Button onClick={() => {
+                                        handleSubmit();
+                                    }}>Submit</Button>
+                                </form>
                             </div>
                             <div className={classes.sectionMobile}>
-                                <IconButton
-                                    aria-label="show more"
-                                    aria-controls={mobileMenuId}
-                                    aria-haspopup="true"
-                                    onClick={handleMobileMenuOpen}
-                                    color="inherit"
-                                >
-                                    <MoreIcon/>
-                                </IconButton>
                             </div>
                         </Toolbar>
                     </AppBar>
@@ -421,6 +397,7 @@ function Welcome(props) {
                 </ThemeProvider>
             </div>
         </div>
-    );}
+    );
+}
 
 export default Welcome;
